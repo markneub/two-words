@@ -12,6 +12,9 @@ import {
     PanResponder
 } from 'react-native'
 
+import _ from 'lodash'
+import util from './util.js'
+
 var {width, height} = require('Dimensions').get('window')
 var SIZE = 4 // four-by-four grid
 var CELL_SIZE = Math.floor(width * 0.2) // 20% of the screen width
@@ -39,12 +42,15 @@ var BoardView = React.createClass({
       },
 
       onPanResponderMove: (evt, gestureState) => {
+        var currCoords = [this.currentlySwipedTile()]
+        var updatedCoordsArray = _.uniqWith(currCoords.concat(this.state.pan.activeCoords), _.isEqual)
         this.setState({
           pan: {
             x0: gestureState.x0,
             y0: gestureState.y0,
             dx: gestureState.dx,
-            dy: gestureState.dy
+            dy: gestureState.dy,
+            activeCoords: updatedCoordsArray
           }
         })
       },
@@ -55,11 +61,12 @@ var BoardView = React.createClass({
             x0: 0,
             y0: 0,
             dx: 0,
-            dy: 0
+            dy: 0,
+            activeCoords: [[]]
           }
         })
       }
-    });
+    })
   },
 
   getInitialState () {
@@ -69,7 +76,8 @@ var BoardView = React.createClass({
         x0: 0,
         y0: 0,
         dx: 0,
-        dy: 0
+        dy: 0,
+        activeCoords: [[]]
       },
       board: {
         x: 0,
@@ -86,6 +94,7 @@ var BoardView = React.createClass({
     </View>
   },
 
+  // set absolute coords and dimensions for game board in viewport
   onLayout (e) {
     let {x, y, width, height} = e.nativeEvent.layout
     this.setState({
@@ -112,7 +121,10 @@ var BoardView = React.createClass({
   },
 
   getTileColor (row, col) {
-    if (this.isBeingSwiped(row, col)) {
+    if (this.getInitialTileColor(row, col) !== COLOR_INACTIVE) {
+      return this.getInitialTileColor(row, col)
+    }
+    if (util.arrayInArray([col, row], this.state.pan.activeCoords)) {
       return this.state.panColor
     }
     return this.getInitialTileColor(row, col)
@@ -137,8 +149,12 @@ var BoardView = React.createClass({
     return [col, row]
   },
 
+  currentlySwipedTile () {
+    return this.xyToColRow(this.state.pan.x0 + this.state.pan.dx, this.state.pan.y0 + this.state.pan.dy)
+  },
+
   isBeingSwiped (row, col) {
-    let [panCol, panRow] = this.xyToColRow(this.state.pan.x0 + this.state.pan.dx, this.state.pan.y0 + this.state.pan.dy)
+    let [panCol, panRow] = this.currentlySwipedTile()
     if (row === panRow && col === panCol) {
       return true
     }
