@@ -36,14 +36,24 @@ var BoardView = React.createClass({
 
   renderTiles () {
     var result = []
+    var level = require('./levels.js')
     for (var row = 0; row < SIZE; row++) {
       for (var col = 0; col < SIZE; col++) {
         var id = row * SIZE + col
-        var letter = String.fromCharCode(65 + id)
+        var letter = level.letterGrid[row][col]
         var style = {
           left: col * CELL_SIZE + CELL_PADDING,
           top: row * CELL_SIZE + CELL_PADDING,
-          opacity: this.state.opacities[id]
+          opacity: this.state.opacities[id],
+          backgroundColor: (() => {
+            var greenTiles = level.endPoints[0]
+            if (row === greenTiles[0][0] && col === greenTiles[0][1]) { return '#00ff00' }
+            if (row === greenTiles[1][0] && col === greenTiles[1][1]) { return '#00ff00' }
+            var redTiles = level.endPoints[1]
+            if (row === redTiles[0][0] && col === redTiles[0][1]) { return '#ff0000' }
+            if (row === redTiles[1][0] && col === redTiles[1][1]) { return '#ff0000' }
+            return '#aaaeee'
+          })()
         }
         result.push(this.renderTile(id, style, letter))
       }
@@ -80,8 +90,7 @@ var styles = StyleSheet.create({
     height: TILE_SIZE,
     borderRadius: BORDER_RADIUS,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#BEE1D2'
+    alignItems: 'center'
   },
   letter: {
     color: '#333',

@@ -1,30 +1,30 @@
-'use strict';
+'use strict'
 
-import React from 'react';
+import React from 'react'
 
 import {
     Text,
     View,
-    StyleSheet,
-} from 'react-native';
+    StyleSheet
+} from 'react-native'
 
-var BoardView = require('./boardview.js');
+var BoardView = require('./boardview.js')
 
 var Main = React.createClass({
-  render() {
+  render () {
     return <View style={styles.container}>
-             <BoardView/>
-           </View>;
-  },
-});
+      <BoardView />
+    </View>
+  }
+})
 
 var styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#644B62',
-  },
-});
+    backgroundColor: '#644B62'
+  }
+})
 
-module.exports = Main;
+module.exports = Main
