@@ -1,4 +1,4 @@
-package com.awesomeproject;
+package com.twowords;
 
 import android.app.Application;
 
