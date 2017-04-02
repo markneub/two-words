@@ -8,7 +8,8 @@ import {
     Text,
     View,
     StyleSheet,
-    TouchableOpacity
+    TouchableOpacity,
+    PanResponder
 } from 'react-native'
 
 var {width, height} = require('Dimensions').get('window')
@@ -20,17 +21,48 @@ var TILE_SIZE = CELL_SIZE - CELL_PADDING * 2
 var LETTER_SIZE = Math.floor(TILE_SIZE * 0.75)
 
 var BoardView = React.createClass({
+  componentWillMount() {
+    this._panResponder = PanResponder.create({
+      onMoveShouldSetResponderCapture: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+
+      onPanResponderGrant: (e, gestureState) => {
+        // console.log('gesture has begun')
+      },
+
+      onPanResponderMove: (evt, gestureState) => {
+        this.setState({
+          x0: gestureState.x0,
+          y0: gestureState.y0,
+          dx: gestureState.dx,
+          dy: gestureState.dy
+        })
+      },
+
+      onPanResponderRelease: (e, {vx, vy}) => {
+        // console.log('gesture has ended')
+      }
+    });
+  },
+
   getInitialState () {
     var opacities = new Array(SIZE * SIZE)
     for (var i = 0; i < opacities.length; i++) {
       opacities[i] = new Animated.Value(1)
     }
-    return {opacities}
+    return {
+      opacities,
+      x0: 0,
+      y0: 0,
+      dx: 0,
+      dy: 0
+    }
   },
 
   render () {
-    return <View style={styles.container}>
+    return <View style={styles.container} {...this._panResponder.panHandlers}>
       {this.renderTiles()}
+      <Text>{this.state.x0 + this.state.dx}, {this.state.y0 + this.state.dy}</Text>
     </View>
   },
 
