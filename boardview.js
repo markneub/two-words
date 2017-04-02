@@ -20,6 +20,11 @@ var BORDER_RADIUS = CELL_PADDING * 2
 var TILE_SIZE = CELL_SIZE - CELL_PADDING * 2
 var LETTER_SIZE = Math.floor(TILE_SIZE * 0.75)
 
+// tile colors
+var COLOR_INACTIVE = "#d5d5d5"
+var COLOR_RED = "#ff0000"
+var COLOR_GREEN = "#00ff00"
+
 var BoardView = React.createClass({
   componentWillMount() {
     this._panResponder = PanResponder.create({
@@ -40,7 +45,12 @@ var BoardView = React.createClass({
       },
 
       onPanResponderRelease: (e, {vx, vy}) => {
-        // console.log('gesture has ended')
+        this.setState({
+          x0: 0,
+          y0: 0,
+          dx: 0,
+          dy: 0
+        })
       }
     });
   },
@@ -68,7 +78,6 @@ var BoardView = React.createClass({
   render () {
     return <View style={styles.container} {...this._panResponder.panHandlers} onLayout={this.onLayout}>
       {this.renderTiles()}
-      <Text>{this.state.x0 + this.state.dx - this.state.board.x}, {this.state.y0 + this.state.dy - this.state.board.y}</Text>
     </View>
   },
 
@@ -91,19 +100,33 @@ var BoardView = React.createClass({
           top: row * CELL_SIZE + CELL_PADDING,
           opacity: this.state.opacities[id],
           backgroundColor: (() => {
+            if (this.isBeingSwiped(row, col)) {
+              return '#ffff00';
+            }
+
             var greenTiles = level.endPoints[0]
-            if (row === greenTiles[0][0] && col === greenTiles[0][1]) { return '#00ff00' }
-            if (row === greenTiles[1][0] && col === greenTiles[1][1]) { return '#00ff00' }
+            if (row === greenTiles[0][0] && col === greenTiles[0][1]) { return COLOR_GREEN }
+            if (row === greenTiles[1][0] && col === greenTiles[1][1]) { return COLOR_GREEN }
             var redTiles = level.endPoints[1]
-            if (row === redTiles[0][0] && col === redTiles[0][1]) { return '#ff0000' }
-            if (row === redTiles[1][0] && col === redTiles[1][1]) { return '#ff0000' }
-            return '#aaaeee'
+            if (row === redTiles[0][0] && col === redTiles[0][1]) { return COLOR_RED }
+            if (row === redTiles[1][0] && col === redTiles[1][1]) { return COLOR_RED }
+            return COLOR_INACTIVE
           })()
         }
         result.push(this.renderTile(id, style, letter))
       }
     }
     return result
+  },
+
+  isBeingSwiped (row, col) {
+    let currentX = this.state.x0 + this.state.dx - this.state.board.x
+    let currentY = this.state.y0 + this.state.dy - this.state.board.y
+    let currentlySwipedTileX = Math.floor(currentX / CELL_SIZE)
+    let currentlySwipedTileY = Math.floor(currentY / CELL_SIZE)
+    if (row === currentlySwipedTileY && col === currentlySwipedTileX) {
+      return true
+    }
   },
 
   renderTile (id, style, letter) {
