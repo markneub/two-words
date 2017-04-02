@@ -32,40 +32,45 @@ var BoardView = React.createClass({
       onMoveShouldSetPanResponderCapture: () => true,
 
       onPanResponderGrant: (e, gestureState) => {
-        // console.log('gesture has begun')
+        let [col, row] = this.xyToColRow(gestureState.x0, gestureState.y0)
+        this.setState({
+          panColor: this.getInitialTileColor(row, col)
+        })
       },
 
       onPanResponderMove: (evt, gestureState) => {
         this.setState({
-          x0: gestureState.x0,
-          y0: gestureState.y0,
-          dx: gestureState.dx,
-          dy: gestureState.dy
+          pan: {
+            x0: gestureState.x0,
+            y0: gestureState.y0,
+            dx: gestureState.dx,
+            dy: gestureState.dy
+          }
         })
       },
 
       onPanResponderRelease: (e, {vx, vy}) => {
         this.setState({
-          x0: 0,
-          y0: 0,
-          dx: 0,
-          dy: 0
+          pan: {
+            x0: 0,
+            y0: 0,
+            dx: 0,
+            dy: 0
+          }
         })
       }
     });
   },
 
   getInitialState () {
-    var opacities = new Array(SIZE * SIZE)
-    for (var i = 0; i < opacities.length; i++) {
-      opacities[i] = new Animated.Value(1)
-    }
     return {
-      opacities,
-      x0: 0,
-      y0: 0,
-      dx: 0,
-      dy: 0,
+      panColor: null,
+      pan: {
+        x0: 0,
+        y0: 0,
+        dx: 0,
+        dy: 0
+      },
       board: {
         x: 0,
         y: 0,
@@ -98,20 +103,7 @@ var BoardView = React.createClass({
         var style = {
           left: col * CELL_SIZE + CELL_PADDING,
           top: row * CELL_SIZE + CELL_PADDING,
-          opacity: this.state.opacities[id],
-          backgroundColor: (() => {
-            if (this.isBeingSwiped(row, col)) {
-              return '#ffff00';
-            }
-
-            var greenTiles = level.endPoints[0]
-            if (row === greenTiles[0][0] && col === greenTiles[0][1]) { return COLOR_GREEN }
-            if (row === greenTiles[1][0] && col === greenTiles[1][1]) { return COLOR_GREEN }
-            var redTiles = level.endPoints[1]
-            if (row === redTiles[0][0] && col === redTiles[0][1]) { return COLOR_RED }
-            if (row === redTiles[1][0] && col === redTiles[1][1]) { return COLOR_RED }
-            return COLOR_INACTIVE
-          })()
+          backgroundColor: this.getTileColor(row, col)
         }
         result.push(this.renderTile(id, style, letter))
       }
@@ -119,12 +111,35 @@ var BoardView = React.createClass({
     return result
   },
 
+  getTileColor (row, col) {
+    if (this.isBeingSwiped(row, col)) {
+      return this.state.panColor
+    }
+    return this.getInitialTileColor(row, col)
+  },
+
+  getInitialTileColor (row, col) {
+    var level = require('./levels.js')
+    var greenTiles = level.endPoints[0]
+    if (row === greenTiles[0][0] && col === greenTiles[0][1]) { return COLOR_GREEN }
+    if (row === greenTiles[1][0] && col === greenTiles[1][1]) { return COLOR_GREEN }
+    var redTiles = level.endPoints[1]
+    if (row === redTiles[0][0] && col === redTiles[0][1]) { return COLOR_RED }
+    if (row === redTiles[1][0] && col === redTiles[1][1]) { return COLOR_RED }
+    return COLOR_INACTIVE
+  },
+
+  xyToColRow (x, y) {
+    let normalX = x - this.state.board.x
+    let normalY = y - this.state.board.y
+    let col = Math.floor(normalX / CELL_SIZE)
+    let row = Math.floor(normalY / CELL_SIZE)
+    return [col, row]
+  },
+
   isBeingSwiped (row, col) {
-    let currentX = this.state.x0 + this.state.dx - this.state.board.x
-    let currentY = this.state.y0 + this.state.dy - this.state.board.y
-    let currentlySwipedTileX = Math.floor(currentX / CELL_SIZE)
-    let currentlySwipedTileY = Math.floor(currentY / CELL_SIZE)
-    if (row === currentlySwipedTileY && col === currentlySwipedTileX) {
+    let [panCol, panRow] = this.xyToColRow(this.state.pan.x0 + this.state.pan.dx, this.state.pan.y0 + this.state.pan.dy)
+    if (row === panRow && col === panCol) {
       return true
     }
   },
@@ -137,12 +152,7 @@ var BoardView = React.createClass({
   },
 
   clickTile (id) {
-    var opacity = this.state.opacities[id]
-    opacity.setValue(0.5) // half transparent, half opaque
-    Animated.timing(opacity, {
-      toValue: 1, // fully opaque
-      duration: 250 // milliseconds
-    }).start()
+    //
   }
 })
 
