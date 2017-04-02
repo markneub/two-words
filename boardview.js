@@ -55,15 +55,28 @@ var BoardView = React.createClass({
       x0: 0,
       y0: 0,
       dx: 0,
-      dy: 0
+      dy: 0,
+      board: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      }
     }
   },
 
   render () {
-    return <View style={styles.container} {...this._panResponder.panHandlers}>
+    return <View style={styles.container} {...this._panResponder.panHandlers} onLayout={this.onLayout}>
       {this.renderTiles()}
-      <Text>{this.state.x0 + this.state.dx}, {this.state.y0 + this.state.dy}</Text>
+      <Text>{this.state.x0 + this.state.dx - this.state.board.x}, {this.state.y0 + this.state.dy - this.state.board.y}</Text>
     </View>
+  },
+
+  onLayout (e) {
+    let {x, y, width, height} = e.nativeEvent.layout
+    this.setState({
+      board: {x, y, width, height}
+    })
   },
 
   renderTiles () {
