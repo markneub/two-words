@@ -8,12 +8,12 @@ import {
     StyleSheet,
 } from 'react-native';
 
+var BoardView = require('./boardview.js');
+
 var Main = React.createClass({
   render() {
     return <View style={styles.container}>
-             <View style={styles.tile}>
-               <Text style={styles.letter}>A</Text>
-             </View>
+             <BoardView/>
            </View>;
   },
 });
@@ -24,18 +24,6 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#644B62',
-  },
-  tile: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#BEE1D2',
-  },
-  letter: {
-    color: '#333',
-    fontSize: 80,
   },
 });
 
